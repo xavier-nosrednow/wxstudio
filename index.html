@@ -296,7 +296,14 @@ function tile(p,{wide=false}={}){
   const a=document.createElement("a"); a.className="tile"+(wide?" wide":""); a.href="#"+p.slug;
   a.setAttribute("aria-label",`${p.artist}, ${p.title}`);
   if(p.preview){
-    const v=document.createElement("video"); Object.assign(v,{src:p.preview,muted:true,loop:true,playsInline:true,autoplay:!reduce}); v.setAttribute("muted",""); a.appendChild(v);
+   const v=document.createElement("video");
+    v.muted=true; v.defaultMuted=true; v.loop=true; v.playsInline=true; v.autoplay=true; v.preload="auto";
+    v.setAttribute("muted",""); v.setAttribute("playsinline",""); v.setAttribute("loop","");
+    v.src=p.preview; a.appendChild(v);
+    const tryPlay=()=>v.play().catch(()=>{});
+    v.addEventListener("canplay",tryPlay,{once:true});
+    a.addEventListener("mouseenter",tryPlay);
+    new IntersectionObserver(es=>es.forEach(e=>e.isIntersecting?tryPlay():v.pause())).observe(v);
   } else {
     const c=document.createElement("canvas"); c.width=wide?640:480; c.height=wide?Math.round(640/2.2):270; a.appendChild(c); scene(c,p.look);
   }
